@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xliff version="1.0">
+	<file source-language="en" datatype="plaintext" original="messages" date="2025-03-31T10:43:00Z" product-name="languagemodes">
+		<header/>
+		<body>
+			<trans-unit id="pages.tx_languagemodes_mode" xml:space="preserve">
+        <source>Language mode override</source>
+      </trans-unit>
+			<trans-unit id="pages.tx_languagemodes_mode.I.0" xml:space="preserve">
+        <source>Standard (inherited)</source>
+      </trans-unit>
+			<trans-unit id="pages.tx_languagemodes_mode.I.1" xml:space="preserve">
+        <source>Strict</source>
+      </trans-unit>
+			<trans-unit id="pages.tx_languagemodes_mode.I.2" xml:space="preserve">
+        <source>Fallback</source>
+      </trans-unit>
+			<trans-unit id="pages.tx_languagemodes_mode.I.3" xml:space="preserve">
+        <source>Free</source>
+      </trans-unit>
+		</body>
+	</file>
+</xliff>

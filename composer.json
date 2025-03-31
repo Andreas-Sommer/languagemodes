@@ -1,0 +1,27 @@
+{
+	"name": "belsignum/languagemodes",
+	"description": "Change languages modes - 'free, fallback, strict' individually for pages",
+	"type": "typo3-cms-extension",
+	"license": "GPL-2.0-or-later",
+	"autoload": {
+		"psr-4": {
+			"Belsignum\\Languagemodes\\": "Classes/"
+		}
+	},
+	"authors": [
+		{
+			"name": "Andreas Sommer",
+			"email": "sommer@belsignum.com"
+		}
+	],
+	"require": {
+		"typo3/cms-core": "^10.4",
+		"cweagans/composer-patches": "^1.7.3"
+	},
+	"extra": {
+		"patches-file": "composer.patches.json",
+		"typo3/cms": {
+			"extension-key": "languagemodes"
+		}
+	}
+}
