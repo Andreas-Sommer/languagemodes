@@ -1,15 +1,24 @@
 # Belsignum Language Modes Extension
 
-This TYPO3 extension `belsignum/languagemodes` allows dynamic per-page configuration of the language fallback mode in TYPO3 v10.
+This TYPO3 extension allows you to dynamically override the `fallbackType` for `SiteLanguage` **per page and language** at runtime.
 
 ## 🧩 Features
 
-- Configure `sys_language_mode` dynamically **per page**
-- Supports the fallback modes: `free`, `fallback`, `strict`
-- No TypoScript configuration required
-- Editor field available only in the default language
+- Define language fallback behavior (`free`, `fallback`, `strict`) per language version of each page
+- Fully compatible with TYPO3 v12
+- Uses `SiteFinder` and `SiteConfiguration` XCLASS for clean and early injection
+- Modifies both `SiteLanguage` and `LanguageAspect` at runtime
+- Configuration is cached safely and applies consistently across the TYPO3 request lifecycle
+- No core patch required since v12
 
-## 🚀 Installation
+## 🔧 How it works
+
+- A `select` field is added to the `pages` table (`tx_languagemodes_mode`)
+- This field is **only visible in translated pages** (i.e., `sys_language_uid > 0`)
+- When a page is resolved, the SiteFinder XCLASS loads the language-specific configuration from the DB and replaces the SiteLanguage for the current request
+- Additionally, the `LanguageAspect` is updated to ensure proper behavior in content fetching and overlays
+
+## 🛠 Installation
 
 Install via Composer:
 
@@ -17,56 +26,65 @@ Install via Composer:
 composer require belsignum/languagemodes
 ```
 
-## ⚠️ TYPO3 v10 – Core Patch Required
+## ⚙️ Configuration
 
-In TYPO3 v10, the core class `TYPO3\CMS\Core\Site\Entity\SiteLanguage` must be patched to add the method `setFallbackType()`.
+No special configuration needed. Once the extension is installed:
 
-This patch **must be integrated manually** via the root-level `composer.json`, using `cweagans/composer-patches`.
-Modify your paths based on root.
+- Open the page module
+- Switch to a language version of a page (not the default language)
+- You will see a select field labeled `Language fallback mode` with the options:
+    - Free
+    - Fallback
+    - Strict
 
-### Example setup in composer.json:
+If no value is selected, the global fallback behavior from the site config applies.
 
-```json
-"extra": {
-  "patches-file": "composer.patches.json"
-}
-```
+## 🧠 Why we use `SiteFinder` / `SiteConfiguration` – and not Middleware, Events or Hooks
 
-### Example composer.patches.json:
+TYPO3 offers multiple ways to influence site and language resolution.
+After extensive evaluation, this extension **intentionally avoids** Middleware or Event-based approaches for the following reasons:
 
-```json
-{
-  "typo3/cms-core": {
-    "Add setFallbackType method to SiteLanguage": "patches/SiteLanguage.diff"
-  }
-}
-```
+### ❌ Why not Middleware?
 
-Then run:
+- Middlewares like `typo3/cms-frontend/site` resolve the site and language context **before** any custom fallback logic can take effect.
+- Injecting a modified `SiteLanguage` or `LanguageAspect` into `$GLOBALS['TYPO3_REQUEST']` **after site resolution** has **no influence** on the request lifecycle.
+- Custom middlewares cannot safely override fallbackType without risk of unstable or version-dependent behavior.
 
-```bash
-composer install
-```
+### ❌ Why not Events?
 
-> ❗ Without this patch, the extension will throw a RuntimeException during execution.
+- Events such as `BootCompletedEvent` or `SiteConfigurationBeforeWriteEvent` are either:
+    - **Too early** (before routing and site resolution),
+    - **Too late** (after the fallback logic has already been applied),
+    - or only trigger on configuration **write operations**, not at runtime.
+- As of TYPO3 v12, there is **no `ModifyResolvedSiteLanguageEvent`** or similar that would allow request-based manipulation of fallback behavior.
 
-## ⚙️ Usage
+### ❌ Why not Hooks?
 
-1. In the page properties (default language only), set the field `Language mode override` to one of the options:
-    - **Standard (inherited)**: Use global/default config
-    - **Strict**: Content must exist in current language
-    - **Fallback**: Use fallback chain as configured in site
-    - **Free**: Freely mix content across fallbacks
+- While legacy hooks like `configArrayPostProc` are still technically available in TYPO3 v12, they no longer have meaningful influence on language resolution.
+- These hooks operate after `TSFE` initialization and only affect TypoScript-based values like `config.sys_language_mode`.
+- Since TYPO3 v9+, language fallback is controlled via `SiteLanguage` and `Context`, not TypoScript.
+- Hook-based solutions are not reliable in modern TYPO3 setups and are not suitable for manipulating `SiteLanguage` or `LanguageAspect`.
 
-2. The configured value applies globally for the page – not per language.
-   TYPO3 v10 does not support per-language fallback configuration at runtime.
+➡️ Therefore, we avoid using legacy hooks and rely on early runtime overrides instead.
 
-3. Fallback behavior is controlled via the (patched) `SiteLanguage` object during request initialization.
+### ✅ Why `SiteFinder` and `SiteConfiguration` XCLASSing is used
+
+- `SiteFinder` and `SiteConfiguration` are part of the early site and language resolution process.
+- By XCLASSing both, the extension can:
+    - Load the language-specific configuration from the database
+    - Dynamically set the `fallbackType` per language and page
+    - Safely inject a new `SiteLanguage` and corresponding `LanguageAspect` into the runtime context
+- This approach is:
+    - Core-compliant
+    - Fully runtime-safe
+    - Patch-free
+    - Compatible with TYPO3 v12+
+
 
 ## 🧑‍💻 Credits
 
 Developed by [Belsignum](https://www.belsignum.com) with ❤️ for TYPO3 integrators.
 
-## 📄 License
+## 📝 License
 
-Licensed under the MIT License.
+Licensed under the [MIT License](https://opensource.org/licenses/MIT)

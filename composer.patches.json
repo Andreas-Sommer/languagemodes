@@ -1,7 +1,0 @@
-{
-	"patches": {
-		"typo3/cms-core": {
-			"Patch SiteLanguage with setFallbackType": "packages/languagemodes/Resources/Patches/SiteLanguage.diff"
-		}
-	}
-}

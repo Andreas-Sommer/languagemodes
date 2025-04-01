@@ -5,7 +5,7 @@ defined('TYPO3') || die();
 call_user_func(function () {
     $GLOBALS['TCA']['pages']['columns']['tx_languagemodes_mode'] = [
         'exclude' => 1,
-        'l10n_mode' => 'exclude',
+        'displayCond' => 'FIELD:sys_language_uid:>:0',
         'label' => 'LLL:EXT:languagemodes/Resources/Private/Language/locallang_db.xlf:pages.tx_languagemodes_mode',
         'config' => [
             'type' => 'select',
