@@ -2,7 +2,7 @@
 
 namespace Belsignum\Languagemodes\Xclass;
 
-use Belsignum\BsdAccmgr\Utility\GeneralUtility;
+use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Core\Configuration\SiteConfiguration;
 use TYPO3\CMS\Core\Context\Context;
 use TYPO3\CMS\Core\Context\LanguageAspect;
