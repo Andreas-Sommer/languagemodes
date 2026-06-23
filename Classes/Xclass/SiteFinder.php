@@ -5,7 +5,7 @@ namespace Belsignum\Languagemodes\Xclass;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Core\Configuration\SiteConfiguration;
 use TYPO3\CMS\Core\Context\Context;
-use TYPO3\CMS\Core\Context\LanguageAspect;
+use TYPO3\CMS\Core\Context\LanguageAspectFactory;
 use TYPO3\CMS\Core\Database\Connection;
 use TYPO3\CMS\Core\Database\ConnectionPool;
 use TYPO3\CMS\Core\Http\ServerRequest;
@@ -73,13 +73,8 @@ class SiteFinder extends \TYPO3\CMS\Core\Site\SiteFinder
                 ->withAttribute('site', $newSite)
                 ->withAttribute('language', $newSiteLanguage);
 
-            // Create new LanguageAspect
-            $languageAspect = new LanguageAspect(
-                $languageId,
-                $languageId,
-                LanguageAspect::OVERLAYS_ON_WITH_FLOATING,
-                $newSiteLanguage->getFallbackLanguageIds()
-            );
+            // Keep the runtime aspect aligned with TYPO3's native fallbackType handling.
+            $languageAspect = LanguageAspectFactory::createFromSiteLanguage($newSiteLanguage);
 
             // Update Context
             /** @var Context $context */
