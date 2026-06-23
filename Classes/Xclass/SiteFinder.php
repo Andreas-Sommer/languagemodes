@@ -51,7 +51,12 @@ class SiteFinder extends \TYPO3\CMS\Core\Site\SiteFinder
                 return;
             }
 
-            $siteConfig['languages'][$languageId]['fallbackType'] = $mode;
+            $languageConfigurationKey = $this->findLanguageConfigurationKey($siteConfig, $languageId);
+            if ($languageConfigurationKey === null) {
+                return;
+            }
+
+            $siteConfig['languages'][$languageConfigurationKey]['fallbackType'] = $mode;
             // create new Site object
             $newSite = new Site(
                 $identifier,
@@ -99,6 +104,17 @@ class SiteFinder extends \TYPO3\CMS\Core\Site\SiteFinder
             ->setMaxResults(1)
             ->executeQuery()
             ->fetchOne();
+    }
+
+    private function findLanguageConfigurationKey(array $siteConfig, int $languageId): int|string|null
+    {
+        foreach (($siteConfig['languages'] ?? []) as $key => $languageConfiguration) {
+            if ((int)($languageConfiguration['languageId'] ?? -1) === $languageId) {
+                return $key;
+            }
+        }
+
+        return null;
     }
 
 }
