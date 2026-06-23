@@ -1,15 +1,16 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Belsignum\Languagemodes\Xclass;
 
-use TYPO3\CMS\Core\Utility\GeneralUtility;
+use Belsignum\Languagemodes\Service\PageLanguageModeService;
 use TYPO3\CMS\Core\Configuration\SiteConfiguration;
 use TYPO3\CMS\Core\Context\Context;
 use TYPO3\CMS\Core\Context\LanguageAspectFactory;
-use TYPO3\CMS\Core\Database\Connection;
-use TYPO3\CMS\Core\Database\ConnectionPool;
 use TYPO3\CMS\Core\Http\ServerRequest;
 use TYPO3\CMS\Core\Site\Entity\Site;
+use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 class SiteFinder extends \TYPO3\CMS\Core\Site\SiteFinder
 {
@@ -42,12 +43,13 @@ class SiteFinder extends \TYPO3\CMS\Core\Site\SiteFinder
             $identifier = $site->getIdentifier();
             $rootPageId = $site->getRootPageId();
             $siteConfig = $site->getConfiguration();
-            $mode = $this->getPageLanguageMode($pid, $languageId);
+            $mode = GeneralUtility::makeInstance(PageLanguageModeService::class)
+                ->getModeForLocalizedPage($pid, $languageId);
 
             if (
-                $mode === false || $mode === ''
+                $mode === null
                 || $language->getFallbackType() === $mode
-                || in_array($mode, ['free', 'fallback', 'strict'], true) === false) {
+            ) {
                 return;
             }
 
@@ -87,23 +89,6 @@ class SiteFinder extends \TYPO3\CMS\Core\Site\SiteFinder
             $context->setAspect('language', $languageAspect);
             $GLOBALS['TYPO3_CONTEXT'] = $context;
         };
-    }
-
-    protected function getPageLanguageMode(int $pid, int $languageId): false|string
-    {
-        $queryBuilder = GeneralUtility::makeInstance(ConnectionPool::class)
-            ->getQueryBuilderForTable('pages');
-
-        return $queryBuilder
-            ->select('tx_languagemodes_mode')
-            ->from('pages')
-            ->where(
-                $queryBuilder->expr()->eq('l10n_parent', $queryBuilder->createNamedParameter($pid, Connection::PARAM_INT)),
-                $queryBuilder->expr()->eq('sys_language_uid', $queryBuilder->createNamedParameter($languageId, Connection::PARAM_INT))
-            )
-            ->setMaxResults(1)
-            ->executeQuery()
-            ->fetchOne();
     }
 
     private function findLanguageConfigurationKey(array $siteConfig, int $languageId): int|string|null
